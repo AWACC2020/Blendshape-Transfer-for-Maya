@@ -1,7 +1,7 @@
 # -!- coding: utf-8 -!-
 # Author  : AWACS
 # Time	: 2020/10/20
-# version : 0.5 beta
+# version : 0.52 beta
 
 import maya.cmds as cmds
 import os
@@ -37,7 +37,7 @@ def BlendShape_Transfer_GUI():
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 1: ")
-    cmds.text(label = "Transfer Method :  ", w = 200, align = "right")
+    cmds.text(label = "Transfer Method XX:  ", w = 200, align = "right")
     cmds.optionMenu( "Transfer_Method" , w = 180 )
     cmds.menuItem( label='Wrap deformer' )
     # cmds.menuItem( label='Sorry,No others yet,I may add more later' )
@@ -135,21 +135,24 @@ def Set_Target_Geo():
 
 def Set_Source_BS():
     Selection = cmds.ls(selection = True)
-
-    Source_BS_list = []
-    for indSel in Selection:
-        if Object_Type_Checker(indSel, "blendShape"):
-            Source_BS_list.append(indSel)
-    print (Source_BS_list)
-    if len(Source_BS_list) < 1:
-        print ("//// Error Object Select , Please Select A BlendShape Node ")
+    if Selection:
+        Source_BS_list = []
+        for indSel in Selection:
+            if Object_Type_Checker(indSel, "blendShape"):
+                Source_BS_list.append(indSel)
+        print (Source_BS_list)
+        if len(Source_BS_list) < 1:
+            print ("//// Error Object Select , Please Select A BlendShape Node at least ")
+        else:
+            BS_Display = ""
+            for indBS in Source_BS_list:
+                BS_Display += indBS
+                BS_Display += " "
+            cmds.textField('InputBS', e = 1, tx = BS_Display)
+            print ("//// Source BlendShape Selected : " + BS_Display)
     else:
-        BS_Display = ""
-        for indBS in Source_BS_list:
-            BS_Display += indBS
-            BS_Display += " "
-        cmds.textField('InputBS', e = 1, tx = BS_Display)
-        print ("//// Source BlendShape Selected : " + BS_Display)
+        cmds.textField('InputBS', e = 1, tx = None)
+        print ("//// Source BlendShape is empty,I will try to find a existing Blendshape if execute transfering ")
 
 def Set_Existing_BS(  ):
     Selection = cmds.ls(selection = True)
@@ -163,7 +166,7 @@ def SearchingForBlendshape( InputNode ):
     """
     try to find Blendshape node from a mesh
     """
-    RelativeNodes = cmds.listRelatives(InputNode)
+    RelativeNodes = cmds.listRelatives(InputNode ,shapes = True)
     SearchResult = []
     # Result_counter = 0
     if RelativeNodes:
@@ -191,7 +194,7 @@ def SearchingForBlendshape( InputNode ):
 def ExecuteTransferBS():
     Source_Geo = cmds.textField('Input_Source_Mesh', query = 1, text = 1)
     Target_Geo = cmds.textField('Input_Target_Mesh', query = 1, text = 1)
-    BS_Display = cmds.textField('InputBS', query = 1, text = 1)
+    Source_BS_Text = cmds.textField('InputBS', query = 1, text = 1)
     NewBSName = cmds.textField('New_BS_Name', query = 1, text = 1)
 
     Append_Driven = cmds.checkBox( "Append_Driven" , query = 1, value = 1)
@@ -204,22 +207,22 @@ def ExecuteTransferBS():
     if Existing_BS is None :
         Add_to_Exist_BS = False
 
-    Source_BS = BS_Display.split(" ")
+
+    if len(Source_BS_Text) > 0:
+        Source_BS = Source_BS_Text.split(" ")
+    else:
+        Source_BS = SearchingForBlendshape(Source_Geo)
 
     print ("-------------------")
     print(Source_BS)
 
-    if len(Source_BS) < 1:
-        Source_BS = SearchingForBlendshape(Source_Geo)
-
     if Source_BS:
-        # print( Source_BS )
         print ("SSSSSSSSSSSSSSSSSSSSSSSS")
-        print ( Source_BS )
         for IndSrcBS in Source_BS:
             if IndSrcBS == "" :
                 continue
             if len(IndSrcBS) > 0 :
+                print((Source_Geo, IndSrcBS, Target_Geo, Add_to_Exist_BS , Existing_BS , False, Append_Driven ,NewBSName))
                 BlendShape_Transfer_to_Subdivided_geo(Source_Geo, IndSrcBS, Target_Geo, Add_to_Exist_BS , Existing_BS , False, Append_Driven ,NewBSName)
             else:
                 print( "No Blendshape Node Found , please select Blendshape Node And Confirm Manually" )
@@ -422,7 +425,10 @@ def BlendShape_Transfer_to_Subdivided_geo( Source_Geo, BS_Node, Target_Geo, Add_
             cmds.disconnectAttr( indTarget_Driven_input , Wrap_Src_BS + '.' + indTarget )
 
         cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 1)
+        # cmds.setAttr(WarpNode + ".envelope", 0)
+        # cmds.setAttr(WarpNode + ".envelope", 1)
         tmp_BS_Target = cmds.duplicate(Target_Geo_Transfer_Ready, n = Target_Geo_Transfer_Ready + "_Temp_" + indTarget)
+
         cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 0)
         Duped_Target_Geo_list.append(tmp_BS_Target[0])
 
@@ -458,15 +464,19 @@ def BlendShape_Transfer_to_Subdivided_geo( Source_Geo, BS_Node, Target_Geo, Add_
     cmds.select(cl = 1)
     for indTargetindex in range(len(Duped_Target_Geo_list)):
         BypassUnuseful_target = True
+        print("transfering : {Transfering} ".format(Transfering = BS_Node_target_list[indTargetindex] ))
         if BypassUnuseful_target:
 
             mismatch = Point_distance_Checker( Target_Geo , Duped_Target_Geo_list[indTargetindex] , 0.02 )
             if mismatch is False :
+                print("below point distance check threshold , by passed ")
                 continue
+
+            Target_Geo_Shape = cmds.listRelatives( Target_Geo , shapes = True )[0]
 
             cmds.select(Duped_Target_Geo_list[indTargetindex])
             cmds.blendShape( FinalBS , e = 1, tc = True, w = (Targer_Index, 0),
-                            t = (Target_Geo + 'Shape', Targer_Index, Duped_Target_Geo_list[indTargetindex] + 'Shape', 1))
+                            t = ( Target_Geo , Targer_Index, Duped_Target_Geo_list[indTargetindex] + 'Shape', 1))
 
             cmds.aliasAttr(BS_Node_target_list[ indTargetindex ], FinalBS + '.w[' + str(Targer_Index) + ']')
         
@@ -483,6 +493,7 @@ def BlendShape_Transfer_to_Subdivided_geo( Source_Geo, BS_Node, Target_Geo, Add_
 
     # clean up
     print ("===================================================")
+    return
     print (WarpNode)
     cmds.delete(WarpNode)
     cmds.delete(Target_Geo_Transfer_Ready)
