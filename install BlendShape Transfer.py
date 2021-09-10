@@ -47,12 +47,12 @@ def MayaDropinstall():
 
     # Script_folder_fullpath = os.path.join( author_folder_dir , dic_script["Script_folder"] )
     Script_folder_fullpath =  author_folder_dir +"/"+ dic_script["Script_folder"] 
-    # print Script_folder_fullpath
+    # print (Script_folder_fullpath)
     # Script_folder_fullpath = os.path.normpath(Script_folder_fullpath)
-    # print Script_folder_fullpath    
-    # print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    # print (Script_folder_fullpath)    
+    # print ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     # Script_folder_fullpath = os.path.normpath(Script_folder_fullpath)
-    print Script_folder_fullpath
+    # print (Script_folder_fullpath)
 
     if os.path.isdir( Script_folder_fullpath ):
         print ( str( Script_folder_fullpath ) + " is Already Exist " + " -------------reinstalling")
@@ -70,10 +70,13 @@ def MayaDropinstall():
     else:
         iconPath = "commandButton.png"
 
-    command = '''
-import sys
-sys.path.append( "{path}" )
+    command = '''import sys
+script_path = "{path}"
+if script_path not in sys.path:
+    sys.path.append(script_path)
 import {module_name}
+if sys.version_info.major > 2 :
+    from imp import reload
 reload ({module_name})
 '''.format(path=Script_folder_fullpath , module_name = dic_script["Script_module_import"] )
 
