@@ -35,9 +35,11 @@ def BlendShape_Transfer_GUI():
     cmds.showWindow('BlendShape_Transfer')
     cmds.columnLayout()
 
+    textwidth = 300
+
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 1: ")
-    cmds.text(label = u"传递方式 : ", w = 240, align = "right")
+    cmds.text(label = u"传递方式 : ", w = textwidth, align = "right")
     cmds.optionMenu( "Transfer_Method" , w = 180 )
     cmds.menuItem( label='Wrap deformer' )
     cmds.menuItem( label=u'目前别的还没写出来咕咕咕' )
@@ -46,7 +48,7 @@ def BlendShape_Transfer_GUI():
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 2: ")
-    cmds.text(label = u"选择原模型 ( 带有原先BS的模型 ) :  ", w = 240, align = "right")
+    cmds.text(label = u"选择原模型 ( 带有原先BS的模型 ) :  ", w = textwidth, align = "right")
     cmds.textField('Input_Source_Mesh', w = 140, h = 24, text = "")
     cmds.button(c = lambda *args: Set_Source_Geo(), label = u"确认", w = 50)
     # Question_Button("Question_Window( 0 )", 10)
@@ -54,21 +56,21 @@ def BlendShape_Transfer_GUI():
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 3: ")
-    cmds.text(label = u"选择新模型 ( 你要传递到的BS的模型 ) :  ", w = 240, align = "right")
+    cmds.text(label = u"选择新模型 ( 你要传递到的BS的模型 ) :  ", w = textwidth, align = "right")
     cmds.textField('Input_Target_Mesh', w = 140, h = 24, text = "")
     cmds.button(c = lambda *args: Set_Target_Geo(), label = u"确认", w = 50)
     cmds.setParent('..')
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 4: ")
-    cmds.text(label = u"选定BS节点(可选，如果没选我会试图自己查找已经链接的已有BS) :  ", w = 240, align = "right")
+    cmds.text(label = u"选定BS节点 (如未选定，会尝试自动查找模型已有BS节点):  ", w = textwidth, align = "right")
     cmds.textField('InputBS', w = 140, h = 24, text = "")
     cmds.button(c = lambda *args: Set_Source_BS(), label = u"确认", w = 50)
     cmds.setParent('..')
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 5: ")
-    cmds.text(label = u" 新的BS的名称 :  ", w = 240, align = "right")
+    cmds.text(label = u" 新的BS的名称 :  ", w = textwidth, align = "right")
     cmds.textField('New_BS_Name', w = 180, h = 24, text = "BS_Transfered")
     cmds.setParent('..')
 
@@ -76,7 +78,7 @@ def BlendShape_Transfer_GUI():
     cmds.text(label = " 6: ")
     # cmds.text(label = "Add to Existing Blendshape Node : ", w = 140)
     
-    cmds.checkBox( "Add_to_exist_BS" , l = u"添加到现有BS节点：  ", value = False, w = 240, align = "right")
+    cmds.checkBox( "Add_to_exist_BS" , l = u"添加到现有BS节点：  ", value = False, w = textwidth, align = "right")
     # cmds.text(label = " Existing_BS :  " ,w = 80)
     cmds.textField('Existing_BS', w = 140, h = 24, text = "")
     cmds.button(c = lambda *args: Set_Existing_BS(), label = u"确认", w = 50)
@@ -91,7 +93,7 @@ def BlendShape_Transfer_GUI():
     cmds.text(label = " 7: ")
     # cmds.text(label = "Add to Existing Blendshape Node : ", w = 140)
     
-    cmds.checkBox( "Append_Driven" , l =u"自带连上驱动", value = False, w = 240, align = "right")
+    cmds.checkBox( "Append_Driven" , l =u"自带连上驱动", value = False, w = textwidth, align = "right")
     # cmds.text(label = " Existing_BS :  " ,w = 80)
     cmds.setParent('..')
 
