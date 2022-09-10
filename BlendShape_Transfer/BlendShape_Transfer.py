@@ -1,31 +1,31 @@
 # -!- coding: utf-8 -!-
 # Author  : AWACS
-# Time	: 2020/10/20
-# version : 0.55 beta
+# Time  : 2022/9/10
+# version : 0.56 beta
 
 import maya.cmds as cmds
 import os
 
-def Question_Button( COMMAND = None , blank_space = 1 ,  btn_label = " ? " ):
-    cmds.text( l= " " ,w = blank_space )
-    cmds.button( c=lambda *args: eval( COMMAND ) , l= btn_label , w=20 )
+# def Question_Button( COMMAND = None , blank_space = 1 ,  btn_label = " ? " ):
+#     cmds.text( l= " " ,w = blank_space )
+#     cmds.button( c=lambda *args: eval( COMMAND ) , l= btn_label , w=20 )
 
-def Question_Window( imageNum = 0 , Window_name = 'Question_Window' , w = 540 , h = 540):
-    if cmds.window( Window_name , q=1, ex=1 ):
-        cmds.deleteUI( Window_name )
-    cmds.window( Window_name )
-    #cmds.dockControl( area='left', content=myWindow, allowedArea=allowedAreas )
-    imagelist = ["Question_BlendShape_Transfer_1.jpg" ,
-                 "Question_BlendShape_Transfer_2.jpg" ,
-                 "Question_BlendShape_Transfer_3.jpg" ,
-                 "Question_BlendShape_Transfer_4.jpg" ,
-                 "Question_BlendShape_Transfer_5.jpg" ,
-                 ]
-    print ( Question_Window_image_path +  "/" + imagelist[ imageNum ] )
-    cmds.paneLayout()
-    cmds.image( image= Question_Window_image_path +  "/" + imagelist[ imageNum ] )
+# def Question_Window( imageNum = 0 , Window_name = 'Question_Window' , w = 540 , h = 540):
+#     if cmds.window( Window_name , q=1, ex=1 ):
+#         cmds.deleteUI( Window_name )
+#     cmds.window( Window_name )
+#     #cmds.dockControl( area='left', content=myWindow, allowedArea=allowedAreas )
+#     imagelist = ["Question_BlendShape_Transfer_1.jpg" ,
+#                  "Question_BlendShape_Transfer_2.jpg" ,
+#                  "Question_BlendShape_Transfer_3.jpg" ,
+#                  "Question_BlendShape_Transfer_4.jpg" ,
+#                  "Question_BlendShape_Transfer_5.jpg" ,
+#                  ]
+#     print ( Question_Window_image_path +  "/" + imagelist[ imageNum ] )
+#     cmds.paneLayout()
+#     cmds.image( image= Question_Window_image_path +  "/" + imagelist[ imageNum ] )
 
-    cmds.showWindow( Window_name )
+#     cmds.showWindow( Window_name )
 
 def BlendShape_Transfer_GUI():
     if cmds.window('BlendShape_Transfer', q = 1, ex = 1):
@@ -37,10 +37,10 @@ def BlendShape_Transfer_GUI():
 
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 1: ")
-    cmds.text(label = "Transfer Method XX:  ", w = 240, align = "right")
+    cmds.text(label = "Transfer Method : ", w = 240, align = "right")
     cmds.optionMenu( "Transfer_Method" , w = 180 )
     cmds.menuItem( label='Wrap deformer' )
-    # cmds.menuItem( label='Sorry,No others yet,I may add more later' )
+    cmds.menuItem( label='Sorry,No others method finished yet' )
     # Question_Button("Question_Window( 0 )", 10)
     cmds.setParent('..')
 
@@ -91,7 +91,7 @@ def BlendShape_Transfer_GUI():
     cmds.text(label = " 7: ")
     # cmds.text(label = "Add to Existing Blendshape Node : ", w = 140)
     
-    cmds.checkBox( "Append_Driven" , l ="     Append_Driven  ", value = False, w = 240, align = "right")
+    cmds.checkBox( "Append_Driven" , l ="     Append Driven  ", value = False, w = 240, align = "right")
     # cmds.text(label = " Existing_BS :  " ,w = 80)
     cmds.setParent('..')
 
@@ -99,6 +99,11 @@ def BlendShape_Transfer_GUI():
     cmds.rowLayout(nc = 6)
     cmds.text(label = " 8: ")
     cmds.button(c = lambda *args: ExecuteTransferBS(), label = "Execute BlendShape Transfer ", w = 180)
+    cmds.setParent('..')
+
+
+    cmds.rowLayout(nc = 6)
+    cmds.text(label = " Notice : Scale X,Y,Z of mesh is better freeze at 1.0 ")
     cmds.setParent('..')
 
 def Object_Type_Checker( InputObject, Object_Type ):
@@ -118,19 +123,25 @@ def Object_Type_Checker( InputObject, Object_Type ):
 
 def Set_Source_Geo():
     Selection = cmds.ls(selection = True)
-    if Object_Type_Checker(Selection[0], "mesh"):
-        cmds.textField('Input_Source_Mesh', e = 1, tx = Selection[0])
-        print ("//// Source Mesh Selected : " + Selection[0])
+    if Selection:
+        if Object_Type_Checker(Selection[0], "mesh"):
+            cmds.textField('Input_Source_Mesh', e = 1, tx = Selection[0])
+            print ("//// Source Mesh Selected : " + Selection[0])
+        else:
+            print ("//// Error Object Select , Please Select A Polygon Mesh ")
     else:
-        print ("//// Error Object Select , Please Select A Polygon Mesh ")
+        print("//// Nothing Selected")
 
 def Set_Target_Geo():
     Selection = cmds.ls(selection = True)
-    if Object_Type_Checker(Selection[0], "mesh"):
-        cmds.textField('Input_Target_Mesh', e = 1, tx = Selection[0])
-        print ("//// Target Mesh Selected : " + Selection[0])
+    if Selection:
+        if Object_Type_Checker(Selection[0], "mesh"):
+            cmds.textField('Input_Target_Mesh', e = 1, tx = Selection[0])
+            print ("//// Target Mesh Selected : " + Selection[0])
+        else:
+            print ("//// Error Object Select , Please Select A Polygon Mesh ")
     else:
-        print ("//// Error Object Select , Please Select A Polygon Mesh ")
+        print("//// Nothing Selected")
 
 def Set_Source_BS():
     Selection = cmds.ls(selection = True)
@@ -155,11 +166,14 @@ def Set_Source_BS():
 
 def Set_Existing_BS(  ):
     Selection = cmds.ls(selection = True)
-    if Object_Type_Checker(Selection[0], "blendShape"):
-        cmds.textField('Existing_BS', e = 1, tx = Selection[0])
-        print ("//// Existing Blendshape Selected : " + Selection[0])
+    if Selection:
+        if Object_Type_Checker(Selection[0], "blendShape"):
+            cmds.textField('Existing_BS', e = 1, tx = Selection[0])
+            print ("//// Existing Blendshape Selected : " + Selection[0])
+        else:
+            print ("//// Error Object Select , Please Select A BlendShape Node ")
     else:
-        print ("//// Error Object Select , Please Select A BlendShape Node ")
+        print("//// Nothing Selected")
 
 def SearchingForBlendshape( InputNode ):
     """
@@ -178,6 +192,7 @@ def SearchingForBlendshape( InputNode ):
                     if Object_Type_Checker(indRel_Rel_Rel, "blendShape"):
                         SearchResult.append(indRel_Rel_Rel)
                         # Result_counter += 1
+        SearchResult = list(set(SearchResult))
         print( InputNode + " BS Search Result : " + str(SearchResult) )
         # if Result_counter > 0 :
         print (SearchResult)
@@ -339,8 +354,7 @@ def BlendShape_Transfer_Main( Source_Geo, BS_Node, Target_Geo, Add_to_Existing_B
     BS_Node_target_list = cmds.listAttr(BS_Node + ".w", k = True, m = True)
     print (BS_Node_target_list)
     #=====================initialize===================
-    # if not Append_Driven:
-    #     Initialize_BS(BS_Node)
+
 
     # ----- recording input Connection of Source BS
     Target_input_Connections = {}
@@ -379,17 +393,31 @@ def BlendShape_Transfer_Main( Source_Geo, BS_Node, Target_Geo, Add_to_Existing_B
 
     WarpNode = Create_Wrap(Wrap_Src_Geo, Target_Geo_Transfer_Ready, "WarpNode_Temp_For_BS_Transfer", 0, 1.0, False, False, 0)
 
+
+    # try update?????????????
+    # there may be some issue about maya dont update deformer before first time executing duplicate command 
+    cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 1)
+    Temp_duplicateFirst = cmds.duplicate( Target_Geo_Transfer_Ready, n = Target_Geo_Transfer_Ready + "_Temp_" + "duplicateFirst_" + indTarget)
+    cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 0)
+    cmds.delete(Temp_duplicateFirst)
+    # try update Finished ?????????????--------------
+
+
     # --------- get individual wrap result
     Duped_Target_Geo_list = []
     for indTarget in BS_Node_target_list:
 
         cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 1)
+        cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 1)
         # cmds.setAttr(WarpNode + ".envelope", 0)
         # cmds.setAttr(WarpNode + ".envelope", 1)
+        # cmds.refresh( f = 1 )
+        # cmds.refresh( f = 1 )
         ind_tmp_BS_Target = cmds.duplicate( Target_Geo_Transfer_Ready, n = Target_Geo_Transfer_Ready + "_Temp_" + indTarget)
 
-        cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 0)
+
         Duped_Target_Geo_list.append(ind_tmp_BS_Target[0])
+        cmds.setAttr(Wrap_Src_BS + '.' + indTarget, 0)
 
     # ----- reconnectAttr Source BS
     for indTarget , indInput_connection in Target_input_Connections.items():
@@ -584,6 +612,6 @@ def DistanceMethod_Full( movedistant, threshold ):
     else:
         return True
 
-global Question_Window_image_path
-Question_Window_image_path = os.path.join(os.path.dirname(__file__), 'Question_BlendShape_Transfer')
+# global Question_Window_image_path
+# Question_Window_image_path = os.path.join(os.path.dirname(__file__), 'Question_BlendShape_Transfer')
 BlendShape_Transfer_GUI()
