@@ -93,7 +93,7 @@ def BlendShape_Transfer_GUI():
     cmds.text(label = " 7: ")
     # cmds.text(label = "Add to Existing Blendshape Node : ", w = 140)
     
-    cmds.checkBox( "Append_Driven" , l =u"自带连上驱动", value = False, w = textwidth, align = "right")
+    cmds.checkBox( "Append_Driven" , l =u"自动链接驱动属性", value = False, w = textwidth, align = "right")
     # cmds.text(label = " Existing_BS :  " ,w = 80)
     cmds.setParent('..')
 
